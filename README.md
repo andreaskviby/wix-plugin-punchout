@@ -113,9 +113,14 @@ npm run deploy
 
 ## 📚 Documentation
 
+### Technical Documentation
 - **[Testing & Deployment Guide](TESTING_DEPLOYMENT.md)** - Complete testing procedures and production deployment
 - **[Buyer Onboarding Guide](BUYER_ONBOARDING.md)** - Step-by-step integration for each procurement system  
 - **[Project Structure](PROJECT_STRUCTURE.md)** - Detailed code organization and architecture
+
+### Business & Marketing
+- **[Business Case & Market Analysis](BUSINESS_CASE.md)** - Comprehensive market opportunity and ROI analysis
+- **[Executive Brief](EXECUTIVE_BRIEF.md)** - Quick summary for decision-makers and partners
 
 ## 🔧 Configuration
 
