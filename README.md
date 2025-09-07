@@ -68,13 +68,13 @@ npm run deploy
 ## 📋 Protocol Support
 
 ### cXML Flow (Ariba/Coupa/JAGGAER)
-1. **Setup Request**: `POST /punchout/cxml/setup`
+1. **Setup Request**: `POST /_functions/punchout/cxml-setup`
 2. **Setup Response**: Returns StartPage URL with session
 3. **Shopping**: Buyer browses Wix store with contract pricing  
 4. **Cart Return**: Generates and sends PunchOutOrderMessage (POOM)
 
 ### OCI Flow (SAP SRM/ERP)
-1. **Start Request**: `GET/POST /punchout/oci/start?HOOK_URL=...`
+1. **Start Request**: `GET/POST /_functions/punchout/oci-handlers?HOOK_URL=...`
 2. **Shopping**: Session-aware browsing with SAP user context
 3. **Cart Return**: `POST` to HOOK_URL with OCI form fields
 
@@ -89,7 +89,7 @@ npm run deploy
 
 1. **Clone and Install**
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/andreaskviby/wix-plugin-punchout.git
    cd wix-plugin-punchout
    npm install
    ```
@@ -144,39 +144,44 @@ npm run deploy
 ## 📊 API Endpoints
 
 ### PunchOut Endpoints
-- `POST /_functions/punchout/cxml/setup` - cXML setup handler
-- `POST /_functions/punchout/cxml/return` - POOM generation
-- `GET|POST /_functions/punchout/oci/start` - OCI session start  
-- `POST /_functions/punchout/oci/return` - OCI cart return
+- `POST /_functions/punchout/cxml-setup` - cXML setup handler (`post_setup`)
+- `POST /_functions/punchout/cxml-return` - POOM generation (`post_cxml_return`)
+- `GET|POST /_functions/punchout/oci-handlers` - OCI session start (`get_oci_start`, `post_oci_start`)
+- `POST /_functions/punchout/oci-handlers` - OCI cart return (`post_oci_return`)
 
 ### Admin APIs
-- `POST /_functions/api/validate-session` - Session validation
-- `GET /_functions/api/export/logs` - Export transaction logs
-- `GET /_functions/api/export/carts` - Export cart data
-- `GET /_functions/health` - Health check endpoint
+- `POST /_functions/api/validate-session` - Session validation (`post_validateSession`)
+- `GET /_functions/api/export` - Export transaction logs (`get_export_logs`)
+- `GET /_functions/api/export` - Export cart data (`get_export_carts`)
+- `GET /_functions/api/export` - Export analytics (`get_export_analytics`)
+- `GET /_functions/health` - Health check endpoint (`get_health`)
 
 ## 🧪 Testing
 
 ### Unit Tests
+> **Note**: Test framework setup is in progress. Currently Jest is configured but not fully implemented.
 ```bash
-npm test
+npm test  # Will be available once Jest setup is completed
 ```
 
 ### Integration Testing
 ```bash
-# Test cXML setup
-curl -X POST http://localhost:3000/_functions/punchout/cxml/setup \
+# Test cXML setup (when dev server is running)
+curl -X POST http://localhost:3000/_functions/punchout/cxml-setup \
   -H "Content-Type: text/xml" \
-  -d @test-data/sample-setup-request.xml
+  -d @test-data/coupa-setup-request.xml
 
 # Test OCI start  
-curl "http://localhost:3000/_functions/punchout/oci/start?HOOK_URL=http://test.sap.com/hook&USERNAME=testuser"
+curl "http://localhost:3000/_functions/punchout/oci-handlers?HOOK_URL=http://test.sap.com/hook&USERNAME=testuser"
+
+# Test health endpoint
+curl http://localhost:3000/_functions/health
 ```
 
 ### Load Testing
 ```bash
 npm install -g artillery
-artillery run test-config/load-test.yml
+artillery run test-data/load-test.yml
 ```
 
 ## 📈 Monitoring & Analytics

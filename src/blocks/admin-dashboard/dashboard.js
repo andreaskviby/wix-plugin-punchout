@@ -15,7 +15,7 @@ async function initializeDashboard() {
     await loadActiveSessions();
     await loadRecentLogs();
     await loadAnalytics();
-    
+
     console.log('Dashboard initialized successfully');
   } catch (error) {
     console.error('Dashboard initialization error:', error);
@@ -29,18 +29,18 @@ async function initializeDashboard() {
 function setupEventHandlers() {
   // Add buyer button
   $w('#addBuyerButton').onClick(() => openAddBuyerModal());
-  
+
   // Refresh buttons
   $w('#refreshConnectionsButton').onClick(() => loadBuyerConnections());
   $w('#refreshSessionsButton').onClick(() => loadActiveSessions());
   $w('#refreshLogsButton').onClick(() => loadRecentLogs());
-  
+
   // Export buttons
   $w('#exportLogsButton').onClick(() => exportLogs());
   $w('#exportCartsButton').onClick(() => exportCarts());
-  
+
   // Test buttons in buyer table
-  $w('#buyerConnectionsTable').onRowSelect((event) => {
+  $w('#buyerConnectionsTable').onRowSelect(event => {
     const buyerId = event.rowData.buyerId;
     $w('#testBuyerButton').show();
     $w('#testBuyerButton').onClick(() => testBuyerConnection(buyerId));
@@ -58,8 +58,9 @@ function setupEventHandlers() {
 async function loadBuyerConnections() {
   try {
     $w('#connectionsLoader').show();
-    
-    const buyerQuery = await wixData.query('PunchoutBuyers')
+
+    const buyerQuery = await wixData
+      .query('PunchoutBuyers')
       .include('lastActivity')
       .descending('lastActivity')
       .find();
@@ -70,12 +71,11 @@ async function loadBuyerConnections() {
       type: buyer.type,
       status: buyer.active ? 'Active' : 'Inactive',
       lastActivity: buyer.lastActivity ? formatDate(buyer.lastActivity) : 'Never',
-      actions: createActionButtons(buyer)
+      actions: createActionButtons(buyer),
     }));
 
     $w('#buyerConnectionsTable').rows = tableData;
     $w('#totalBuyersText').text = `Total Buyers: ${tableData.length}`;
-    
   } catch (error) {
     console.error('Error loading buyer connections:', error);
     showError('Failed to load buyer connections');
@@ -90,9 +90,10 @@ async function loadBuyerConnections() {
 async function loadActiveSessions() {
   try {
     $w('#sessionsLoader').show();
-    
+
     const now = new Date();
-    const sessionQuery = await wixData.query('PunchoutSessions')
+    const sessionQuery = await wixData
+      .query('PunchoutSessions')
       .gt('expiresAt', now)
       .include('createdAt')
       .descending('createdAt')
@@ -105,12 +106,11 @@ async function loadActiveSessions() {
       userHint: session.userHint || 'N/A',
       createdAt: formatDateTime(session.createdAt),
       expiresAt: formatDateTime(session.expiresAt),
-      timeRemaining: getTimeRemaining(session.expiresAt)
+      timeRemaining: getTimeRemaining(session.expiresAt),
     }));
 
     $w('#activeSessionsTable').rows = tableData;
     $w('#activeSessionsCount').text = `Active Sessions: ${tableData.length}`;
-    
   } catch (error) {
     console.error('Error loading active sessions:', error);
     showError('Failed to load active sessions');
@@ -125,8 +125,9 @@ async function loadActiveSessions() {
 async function loadRecentLogs() {
   try {
     $w('#logsLoader').show();
-    
-    const logQuery = await wixData.query('PunchoutLogs')
+
+    const logQuery = await wixData
+      .query('PunchoutLogs')
       .include('timestamp')
       .descending('timestamp')
       .limit(50)
@@ -140,11 +141,10 @@ async function loadRecentLogs() {
       buyerId: log.buyerId || 'N/A',
       endpoint: log.endpoint,
       status: log.httpStatus,
-      statusIcon: getStatusIcon(log.httpStatus)
+      statusIcon: getStatusIcon(log.httpStatus),
     }));
 
     $w('#transactionLogsTable').rows = tableData;
-    
   } catch (error) {
     console.error('Error loading transaction logs:', error);
     showError('Failed to load transaction logs');
@@ -160,20 +160,20 @@ async function loadAnalytics() {
   try {
     // Get sessions in last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
-    const sessionQuery = await wixData.query('PunchoutSessions')
+
+    const sessionQuery = await wixData
+      .query('PunchoutSessions')
       .gt('createdAt', thirtyDaysAgo)
       .find();
-      
-    const cartQuery = await wixData.query('PunchoutCarts')
-      .gt('postedAt', thirtyDaysAgo)
-      .find();
+
+    const cartQuery = await wixData.query('PunchoutCarts').gt('postedAt', thirtyDaysAgo).find();
 
     // Calculate metrics
     const totalSessions = sessionQuery.items.length;
     const totalCarts = cartQuery.items.length;
-    const conversionRate = totalSessions > 0 ? ((totalCarts / totalSessions) * 100).toFixed(1) : '0.0';
-    
+    const conversionRate =
+      totalSessions > 0 ? ((totalCarts / totalSessions) * 100).toFixed(1) : '0.0';
+
     // Calculate total value
     const totalValue = cartQuery.items.reduce((sum, cart) => {
       return sum + parseFloat(cart.totals?.total || 0);
@@ -184,14 +184,13 @@ async function loadAnalytics() {
     $w('#totalCartsMetric').text = totalCarts.toString();
     $w('#conversionRateMetric').text = `${conversionRate}%`;
     $w('#totalValueMetric').text = `$${totalValue.toFixed(2)}`;
-    
+
     // Protocol breakdown
     const protocolCounts = {};
     sessionQuery.items.forEach(session => {
       const buyerQuery = wixData.query('PunchoutBuyers').eq('buyerId', session.buyerId).find();
       // Note: This would need to be optimized for production
     });
-
   } catch (error) {
     console.error('Error loading analytics:', error);
     showError('Failed to load analytics');
@@ -210,10 +209,10 @@ function openAddBuyerModal() {
   $w('#senderIdentityInput').value = '';
   $w('#sharedSecretInput').value = '';
   $w('#priceListInput').value = '';
-  
+
   // Show modal
   $w('#addBuyerModal').show();
-  
+
   // Set up form handlers
   $w('#saveBuyerButton').onClick(() => saveBuyer());
   $w('#cancelBuyerButton').onClick(() => $w('#addBuyerModal').hide());
@@ -225,21 +224,19 @@ function openAddBuyerModal() {
 async function saveBuyer() {
   try {
     $w('#saveBuyerButton').disable();
-    
+
     // Validate form
     const buyerId = $w('#buyerIdInput').value;
     const type = $w('#buyerTypeDropdown').value;
-    
+
     if (!buyerId || !type) {
       showError('Buyer ID and Type are required');
       return;
     }
 
     // Check if buyer already exists
-    const existingBuyer = await wixData.query('PunchoutBuyers')
-      .eq('buyerId', buyerId)
-      .find();
-      
+    const existingBuyer = await wixData.query('PunchoutBuyers').eq('buyerId', buyerId).find();
+
     if (existingBuyer.items.length > 0) {
       showError('Buyer ID already exists');
       return;
@@ -252,14 +249,14 @@ async function saveBuyer() {
       active: true,
       createdDate: new Date(),
       catalogScope: {},
-      fieldMappings: {}
+      fieldMappings: {},
     };
 
     if (type === 'cXML') {
       buyerData.identities = {
         from: $w('#fromIdentityInput').value,
         to: $w('#toIdentityInput').value,
-        sender: $w('#senderIdentityInput').value
+        sender: $w('#senderIdentityInput').value,
       };
       buyerData.sharedSecret = $w('#sharedSecretInput').value;
     }
@@ -270,13 +267,12 @@ async function saveBuyer() {
 
     // Save buyer
     await wixData.insert('PunchoutBuyers', buyerData);
-    
+
     // Refresh table and close modal
     await loadBuyerConnections();
     $w('#addBuyerModal').hide();
-    
-    showSuccess('Buyer added successfully');
 
+    showSuccess('Buyer added successfully');
   } catch (error) {
     console.error('Error saving buyer:', error);
     showError('Failed to save buyer');
@@ -291,21 +287,20 @@ async function saveBuyer() {
 async function testBuyerConnection(buyerId) {
   try {
     $w('#testBuyerButton').disable();
-    
+
     const response = await fetch('/api/punchout/test-connection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ buyerId })
+      body: JSON.stringify({ buyerId }),
     });
 
     const result = await response.json();
-    
+
     if (result.success) {
       showSuccess(`Connection test successful: ${result.message}`);
     } else {
       showError(`Connection test failed: ${result.error}`);
     }
-
   } catch (error) {
     console.error('Error testing connection:', error);
     showError('Connection test failed');
@@ -320,9 +315,9 @@ async function testBuyerConnection(buyerId) {
 async function exportLogs() {
   try {
     $w('#exportLogsButton').disable();
-    
+
     const response = await fetch('/api/punchout/export/logs', {
-      method: 'GET'
+      method: 'GET',
     });
 
     if (response.ok) {
@@ -332,12 +327,11 @@ async function exportLogs() {
       a.href = url;
       a.download = `punchout-logs-${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
-      
+
       showSuccess('Logs exported successfully');
     } else {
       throw new Error('Export failed');
     }
-
   } catch (error) {
     console.error('Error exporting logs:', error);
     showError('Failed to export logs');
@@ -352,9 +346,9 @@ async function exportLogs() {
 async function exportCarts() {
   try {
     $w('#exportCartsButton').disable();
-    
+
     const response = await fetch('/api/punchout/export/carts', {
-      method: 'GET'
+      method: 'GET',
     });
 
     if (response.ok) {
@@ -364,12 +358,11 @@ async function exportCarts() {
       a.href = url;
       a.download = `punchout-carts-${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
-      
+
       showSuccess('Carts exported successfully');
     } else {
       throw new Error('Export failed');
     }
-
   } catch (error) {
     console.error('Error exporting carts:', error);
     showError('Failed to export carts');
@@ -393,12 +386,12 @@ function getTimeRemaining(expiresAt) {
   const now = new Date();
   const expires = new Date(expiresAt);
   const diff = expires - now;
-  
+
   if (diff <= 0) return 'Expired';
-  
+
   const minutes = Math.floor(diff / (1000 * 60));
   if (minutes < 60) return `${minutes}m`;
-  
+
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
 }
