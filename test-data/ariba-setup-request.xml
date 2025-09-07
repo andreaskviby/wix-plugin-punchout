@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.014/cXML.dtd">
+<cXML payloadID="test-ariba-67890" timestamp="2024-01-15T14:45:00Z">
+  <Header>
+    <From>
+      <Credential domain="buyer.ariba.com">
+        <Identity>ariba-buyer-network</Identity>
+      </Credential>
+    </From>
+    <To>
+      <Credential domain="yourstore.wix.com">
+        <Identity>your-supplier-id</Identity>
+      </Credential>
+    </To>
+    <Sender>
+      <Credential domain="buyer.ariba.com">
+        <Identity>ariba-network-sender</Identity>
+        <SharedSecret>ariba-test-secret-67890</SharedSecret>
+      </Credential>
+    </Sender>
+  </Header>
+  <Request>
+    <PunchOutSetupRequest operation="create">
+      <BuyerCookie>ariba-user-session-67890</BuyerCookie>
+      <Extrinsic name="SupplierID">SUP123456</Extrinsic>
+      <Extrinsic name="CatalogName">Test Catalog</Extrinsic>
+    </PunchOutSetupRequest>
+  </Request>
+</cXML>

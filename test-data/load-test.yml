@@ -1,0 +1,62 @@
+# Load Testing Configuration for PunchOut Connector
+
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: Warm up
+    - duration: 120
+      arrivalRate: 10
+      name: Normal load
+    - duration: 60
+      arrivalRate: 20
+      name: Peak load
+
+scenarios:
+  - name: cXML Setup Flow
+    weight: 60
+    flow:
+      - post:
+          url: "/_functions/punchout/cxml/setup"
+          headers:
+            Content-Type: "text/xml"
+          body: |
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE cXML SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.014/cXML.dtd">
+            <cXML payloadID="load-test-{{ $uuid }}" timestamp="{{ $timestamp }}">
+              <Header>
+                <From><Credential domain="test.coupa.com"><Identity>test-buyer</Identity></Credential></From>
+                <To><Credential domain="yourstore.wix.com"><Identity>test-supplier</Identity></Credential></To>
+                <Sender><Credential domain="test.coupa.com"><Identity>test-sender</Identity><SharedSecret>test-secret</SharedSecret></Credential></Sender>
+              </Header>
+              <Request>
+                <PunchOutSetupRequest operation="create">
+                  <BuyerCookie>load-test-{{ $uuid }}</BuyerCookie>
+                </PunchOutSetupRequest>
+              </Request>
+            </cXML>
+          expect:
+            - statusCode: 200
+            - contentType: text/xml
+            
+  - name: OCI Start Flow  
+    weight: 30
+    flow:
+      - get:
+          url: "/_functions/punchout/oci/start"
+          qs:
+            HOOK_URL: "https://test.sap.com/hook"
+            USERNAME: "loadtest{{ $uuid }}"
+            USEREMAIL: "test{{ $uuid }}@sap.com"
+          expect:
+            - statusCode: 302
+            
+  - name: Health Check
+    weight: 10
+    flow:
+      - get:
+          url: "/_functions/health"
+          expect:
+            - statusCode: 200
+            - contentType: application/json

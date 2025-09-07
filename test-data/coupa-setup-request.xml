@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cXML SYSTEM "http://xml.cxml.org/schemas/cXML/1.2.014/cXML.dtd">
+<cXML payloadID="test-setup-12345" timestamp="2024-01-15T10:30:00Z">
+  <Header>
+    <From>
+      <Credential domain="buyer.coupa.com">
+        <Identity>acme-corp</Identity>
+      </Credential>
+    </From>
+    <To>
+      <Credential domain="yourstore.wix.com">
+        <Identity>your-supplier-id</Identity>
+      </Credential>
+    </To>
+    <Sender>
+      <Credential domain="buyer.coupa.com">
+        <Identity>coupa-sender</Identity>
+        <SharedSecret>test-shared-secret-12345</SharedSecret>
+      </Credential>
+    </Sender>
+  </Header>
+  <Request>
+    <PunchOutSetupRequest operation="create">
+      <BuyerCookie>user-session-coupa-12345</BuyerCookie>
+    </PunchOutSetupRequest>
+  </Request>
+</cXML>
