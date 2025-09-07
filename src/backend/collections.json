@@ -1,0 +1,228 @@
+{
+  "collections": [
+    {
+      "name": "PunchoutBuyers",
+      "displayName": "PunchOut Buyers",
+      "fields": [
+        {
+          "key": "buyerId",
+          "displayName": "Buyer ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "type",
+          "displayName": "Protocol Type",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "identities",
+          "displayName": "Identities/Domains",
+          "type": "object"
+        },
+        {
+          "key": "sharedSecret",
+          "displayName": "Shared Secret",
+          "type": "text"
+        },
+        {
+          "key": "returnUrlRules",
+          "displayName": "Return URL Rules",
+          "type": "object"
+        },
+        {
+          "key": "priceListId",
+          "displayName": "Price List ID",
+          "type": "text"
+        },
+        {
+          "key": "catalogScope",
+          "displayName": "Catalog Scope",
+          "type": "object"
+        },
+        {
+          "key": "fieldMappings",
+          "displayName": "Field Mappings",
+          "type": "object"
+        },
+        {
+          "key": "active",
+          "displayName": "Active",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "key": "createdDate",
+          "displayName": "Created Date",
+          "type": "datetime"
+        },
+        {
+          "key": "lastActivity",
+          "displayName": "Last Activity",
+          "type": "datetime"
+        }
+      ]
+    },
+    {
+      "name": "PunchoutSessions",
+      "displayName": "PunchOut Sessions",
+      "fields": [
+        {
+          "key": "sid",
+          "displayName": "Session ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "buyerId",
+          "displayName": "Buyer ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "userHint",
+          "displayName": "User Hint",
+          "type": "text"
+        },
+        {
+          "key": "hookUrl",
+          "displayName": "Hook URL (OCI)",
+          "type": "text"
+        },
+        {
+          "key": "pricingTier",
+          "displayName": "Pricing Tier",
+          "type": "text"
+        },
+        {
+          "key": "expiresAt",
+          "displayName": "Expires At",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "key": "createdAt",
+          "displayName": "Created At",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "key": "cartData",
+          "displayName": "Cart Data",
+          "type": "object"
+        }
+      ]
+    },
+    {
+      "name": "PunchoutLogs",
+      "displayName": "PunchOut Logs",
+      "fields": [
+        {
+          "key": "timestamp",
+          "displayName": "Timestamp",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "key": "direction",
+          "displayName": "Direction",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "protocol",
+          "displayName": "Protocol",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "buyerId",
+          "displayName": "Buyer ID",
+          "type": "text"
+        },
+        {
+          "key": "endpoint",
+          "displayName": "Endpoint",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "httpStatus",
+          "displayName": "HTTP Status",
+          "type": "number"
+        },
+        {
+          "key": "payload",
+          "displayName": "Payload",
+          "type": "richContent"
+        },
+        {
+          "key": "headers",
+          "displayName": "Headers",
+          "type": "object"
+        },
+        {
+          "key": "sessionId",
+          "displayName": "Session ID",
+          "type": "text"
+        },
+        {
+          "key": "errorMessage",
+          "displayName": "Error Message",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "PunchoutCarts",
+      "displayName": "PunchOut Carts",
+      "fields": [
+        {
+          "key": "sid",
+          "displayName": "Session ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "buyerId",
+          "displayName": "Buyer ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "lines",
+          "displayName": "Line Items",
+          "type": "object",
+          "required": true
+        },
+        {
+          "key": "totals",
+          "displayName": "Totals",
+          "type": "object"
+        },
+        {
+          "key": "postedAt",
+          "displayName": "Posted At",
+          "type": "datetime"
+        },
+        {
+          "key": "status",
+          "displayName": "Status",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "returnUrl",
+          "displayName": "Return URL",
+          "type": "text"
+        },
+        {
+          "key": "protocol",
+          "displayName": "Protocol Used",
+          "type": "text"
+        }
+      ]
+    }
+  ]
+}

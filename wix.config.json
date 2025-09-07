@@ -1,0 +1,27 @@
+{
+  "appId": "wix-punchout-connector",
+  "appName": "B2B PunchOut Connector",
+  "appDescription": "Enterprise procurement integration for cXML (Ariba, Coupa, JAGGAER) and OCI (SAP) systems",
+  "appVersion": "1.0.0",
+  "platform": {
+    "applicationId": "wix-punchout-connector"
+  },
+  "build": {
+    "pages": ["src/pages/**/*.js"],
+    "backend": {
+      "httpFunctions": "src/backend/http-functions/**/*.js",
+      "events": "src/backend/events.js",
+      "jobs": "src/backend/jobs.js"
+    },
+    "collections": "src/backend/collections.json",
+    "blocks": "src/blocks/**/*"
+  },
+  "permissions": [
+    "wix.data.read",
+    "wix.data.write", 
+    "wix.ecom.read",
+    "wix.ecom.write",
+    "wix.secrets.read",
+    "wix.http-functions"
+  ]
+}

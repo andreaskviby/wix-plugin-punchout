@@ -1,0 +1,34 @@
+{
+  "buyerId": "oci_sap_acme_com_john_doe",
+  "type": "OCI",
+  "identities": {
+    "hookUrl": "https://sap.acme.com/sap/bc/gui/sap/its/bbpfunds",
+    "username": "john.doe",
+    "domain": "sap.acme.com"
+  },
+  "active": true,
+  "priceListId": "sap_enterprise_pricing",
+  "catalogScope": {
+    "allowedCollections": ["sap-approved", "enterprise-supplies"],
+    "excludedProducts": [],
+    "allowedTags": ["sap-catalog", "procurement-approved"]
+  },
+  "fieldMappings": {
+    "sku": "matnr",
+    "category": "matkl",
+    "extrinsics": {
+      "LeadTime": "leadTime",
+      "Vendor": "vendor", 
+      "ManufacturerCode": "mfrpn",
+      "Service": "service"
+    }
+  },
+  "ociSettings": {
+    "version": "4.0",
+    "caller": "SRM",
+    "target": "_blank",
+    "encoding": "UTF-8"
+  },
+  "createdDate": "2024-01-15T09:30:00Z",
+  "notes": "Auto-generated OCI buyer from first session - SAP SRM integration"
+}

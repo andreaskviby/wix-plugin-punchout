@@ -1,0 +1,51 @@
+{
+  "name": "wix-punchout-connector",
+  "version": "1.0.0",
+  "description": "B2B PunchOut Connector for Wix - cXML/OCI integration for enterprise procurement systems",
+  "main": "src/backend/http-functions.js",
+  "scripts": {
+    "dev": "wix dev",
+    "build": "wix build",
+    "deploy": "wix deploy",
+    "test": "jest",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "keywords": [
+    "wix",
+    "punchout",
+    "cxml",
+    "oci",
+    "b2b",
+    "procurement",
+    "ariba",
+    "coupa",
+    "jaggaer",
+    "sap"
+  ],
+  "author": "Andreas Kviby",
+  "license": "MIT",
+  "dependencies": {
+    "@wix/blocks": "^1.0.0",
+    "@wix/data": "^1.0.0",
+    "@wix/ecom": "^1.0.0",
+    "@wix/http-functions": "^1.0.0",
+    "@wix/sdk": "^1.0.0",
+    "@wix/secrets": "^1.0.0",
+    "xml2js": "^0.6.0",
+    "crypto": "^1.0.1",
+    "moment": "^2.29.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

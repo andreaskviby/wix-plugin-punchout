@@ -1,0 +1,42 @@
+{
+  "blockId": "punchout-admin-dashboard",
+  "name": "PunchOut Admin Dashboard",
+  "description": "Administrative interface for managing B2B PunchOut connections",
+  "version": "1.0.0",
+  "category": "business",
+  "widgets": [
+    {
+      "widgetId": "buyer-connections",
+      "name": "Buyer Connections",
+      "description": "Manage buyer configurations and connections",
+      "defaultWidth": 12,
+      "defaultHeight": 6
+    },
+    {
+      "widgetId": "session-monitor",
+      "name": "Session Monitor", 
+      "description": "Monitor active PunchOut sessions",
+      "defaultWidth": 6,
+      "defaultHeight": 4
+    },
+    {
+      "widgetId": "transaction-logs",
+      "name": "Transaction Logs",
+      "description": "View and export transaction logs",
+      "defaultWidth": 12,
+      "defaultHeight": 8
+    },
+    {
+      "widgetId": "analytics-dashboard",
+      "name": "Analytics Dashboard",
+      "description": "PunchOut usage analytics and metrics",
+      "defaultWidth": 6,
+      "defaultHeight": 4
+    }
+  ],
+  "permissions": [
+    "wix.data.read",
+    "wix.data.write",
+    "wix.secrets.read"
+  ]
+}
