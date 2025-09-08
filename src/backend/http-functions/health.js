@@ -9,8 +9,8 @@ export async function get_health(request) {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       version: '1.0.0',
-      service: 'wix-punchout-connector'
+      service: 'wix-punchout-connector',
     }),
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
   });
 }

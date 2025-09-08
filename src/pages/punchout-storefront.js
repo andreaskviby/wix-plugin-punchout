@@ -6,7 +6,7 @@ $w.onReady(function () {
   // Check if this is a PunchOut session
   const urlParams = new URLSearchParams(window.location.search);
   const sessionId = urlParams.get('sid');
-  
+
   if (sessionId) {
     initializePunchOutSession(sessionId);
   }
@@ -26,7 +26,7 @@ async function initializePunchOutSession(sessionId) {
 
     // Store session info globally
     $w('#hiddenSessionId').value = sessionId;
-    
+
     // Get buyer info
     const buyer = await getBuyerInfo(session.buyerId);
     if (!buyer) {
@@ -40,7 +40,7 @@ async function initializePunchOutSession(sessionId) {
 
     // Update UI for PunchOut mode
     showPunchOutInterface(buyer);
-    
+
     // Hide standard checkout and show PunchOut return button
     hideStandardCheckout();
     showReturnToProcurementButton(buyer);
@@ -49,7 +49,6 @@ async function initializePunchOutSession(sessionId) {
     setupCartMonitoring(sessionId);
 
     console.log('PunchOut session initialized successfully');
-
   } catch (error) {
     console.error('Error initializing PunchOut session:', error);
     showError('Failed to initialize PunchOut session');
@@ -64,7 +63,7 @@ async function validatePunchOutSession(sessionId) {
     const response = await fetch('/api/punchout/validate-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId })
+      body: JSON.stringify({ sessionId }),
     });
 
     if (response.ok) {
@@ -82,10 +81,8 @@ async function validatePunchOutSession(sessionId) {
  */
 async function getBuyerInfo(buyerId) {
   try {
-    const buyerQuery = await wixData.query('PunchoutBuyers')
-      .eq('buyerId', buyerId)
-      .find();
-    
+    const buyerQuery = await wixData.query('PunchoutBuyers').eq('buyerId', buyerId).find();
+
     return buyerQuery.items[0];
   } catch (error) {
     console.error('Error getting buyer info:', error);
@@ -104,31 +101,25 @@ async function applyCatalogScope(buyer) {
   try {
     // Filter products based on buyer's catalog scope
     const catalogScope = buyer.catalogScope;
-    
+
     if (catalogScope.allowedCollections) {
       // Show only specific collections
       $w('#productGallery').setFilter(
-        wixData.filter()
-          .hasSome('collections', catalogScope.allowedCollections)
+        wixData.filter().hasSome('collections', catalogScope.allowedCollections)
       );
     }
-    
+
     if (catalogScope.allowedTags) {
       // Show only products with specific tags
-      $w('#productGallery').setFilter(
-        wixData.filter()
-          .hasSome('ribbon', catalogScope.allowedTags)
-      );
+      $w('#productGallery').setFilter(wixData.filter().hasSome('ribbon', catalogScope.allowedTags));
     }
 
     if (catalogScope.excludedProducts) {
       // Hide specific products
       $w('#productGallery').setFilter(
-        wixData.filter()
-          .not(wixData.filter().hasSome('_id', catalogScope.excludedProducts))
+        wixData.filter().not(wixData.filter().hasSome('_id', catalogScope.excludedProducts))
       );
     }
-
   } catch (error) {
     console.error('Error applying catalog scope:', error);
   }
@@ -150,7 +141,6 @@ async function applyPricing(buyer, session) {
       $w('#pricingTierIndicator').text = `Pricing: ${session.pricingTier}`;
       $w('#pricingTierIndicator').show();
     }
-
   } catch (error) {
     console.error('Error applying pricing:', error);
   }
@@ -163,11 +153,11 @@ function showPunchOutInterface(buyer) {
   // Show PunchOut banner
   $w('#punchoutBanner').show();
   $w('#buyerName').text = buyer.buyerId;
-  
+
   // Show session info
   $w('#sessionInfo').show();
   $w('#sessionProtocol').text = buyer.type;
-  
+
   // Add PunchOut-specific styling
   $w('#page').addClass('punchout-mode');
 }
@@ -180,12 +170,12 @@ function hideStandardCheckout() {
   if ($w('#checkoutButton')) {
     $w('#checkoutButton').hide();
   }
-  
+
   // Hide cart widget if present
   if ($w('#cartWidget')) {
     $w('#cartWidget').hide();
   }
-  
+
   // Hide payment-related elements
   if ($w('#paymentSection')) {
     $w('#paymentSection').hide();
@@ -198,11 +188,11 @@ function hideStandardCheckout() {
 function showReturnToProcurementButton(buyer) {
   const returnButton = $w('#returnToProcurementButton');
   returnButton.show();
-  
+
   // Update button text based on buyer type
   const buyerName = buyer.identities?.from || buyer.buyerId;
   returnButton.label = `Return to ${buyerName}`;
-  
+
   // Set up click handler
   returnButton.onClick(() => {
     returnToProcurement();
@@ -214,10 +204,10 @@ function showReturnToProcurementButton(buyer) {
  */
 function setupCartMonitoring(sessionId) {
   // Monitor cart changes
-  cart.onChange((cart) => {
+  cart.onChange(cart => {
     const itemCount = cart.lineItems.length;
     const returnButton = $w('#returnToProcurementButton');
-    
+
     if (itemCount > 0) {
       returnButton.label = `Return ${itemCount} items to Procurement`;
       returnButton.enable();
@@ -245,11 +235,11 @@ async function returnToProcurement() {
 
     // Convert cart to PunchOut format
     const cartData = convertCartToPunchOut(currentCart);
-    
+
     // Get session info
     const sessionId = $w('#hiddenSessionId').value;
     const session = await validatePunchOutSession(sessionId);
-    
+
     if (!session) {
       showError('Session has expired');
       return;
@@ -258,7 +248,7 @@ async function returnToProcurement() {
     // Determine return method based on buyer type
     const buyer = await getBuyerInfo(session.buyerId);
     let returnResponse;
-    
+
     if (buyer.type === 'cXML') {
       returnResponse = await sendCxmlReturn(sessionId, cartData);
     } else if (buyer.type === 'OCI') {
@@ -269,10 +259,10 @@ async function returnToProcurement() {
 
     if (returnResponse.success) {
       showReturnSuccess(returnResponse, buyer);
-      
+
       // Clear cart
       await cart.removeAllItems();
-      
+
       // Redirect or close window after delay
       setTimeout(() => {
         if (returnResponse.method === 'browser_post') {
@@ -281,11 +271,9 @@ async function returnToProcurement() {
           window.close();
         }
       }, 3000);
-      
     } else {
       showError(`Return failed: ${returnResponse.error}`);
     }
-
   } catch (error) {
     console.error('Return to procurement error:', error);
     showError('Failed to return to procurement system');
@@ -310,7 +298,7 @@ function convertCartToPunchOut(cart) {
     vendor: item.productName?.brand || '',
     manufacturerPartId: item.catalogReference?.options?.customTextFields?.manufacturerPartId || '',
     manufacturer: item.catalogReference?.options?.customTextFields?.manufacturer || '',
-    leadTime: item.catalogReference?.options?.customTextFields?.leadTime || '0'
+    leadTime: item.catalogReference?.options?.customTextFields?.leadTime || '0',
   }));
 }
 
@@ -323,8 +311,8 @@ async function sendCxmlReturn(sessionId, cartData) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       sessionId,
-      cartData: JSON.stringify(cartData)
-    })
+      cartData: JSON.stringify(cartData),
+    }),
   });
 
   return await response.json();
@@ -339,8 +327,8 @@ async function sendOciReturn(sessionId, cartData) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       sessionId,
-      cartData: JSON.stringify(cartData)
-    })
+      cartData: JSON.stringify(cartData),
+    }),
   });
 
   return await response.json();
@@ -354,12 +342,12 @@ function submitPoomForm(poomXml, returnUrl) {
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = returnUrl;
-  
+
   const input = document.createElement('input');
   input.type = 'hidden';
   input.name = 'cxml-document';
   input.value = poomXml;
-  
+
   form.appendChild(input);
   document.body.appendChild(form);
   form.submit();
@@ -371,11 +359,12 @@ function submitPoomForm(poomXml, returnUrl) {
 function showReturnSuccess(response, buyer) {
   $w('#successMessage').show();
   $w('#successText').text = `Successfully returned ${response.itemCount} items to ${buyer.buyerId}`;
-  
+
   if (response.method === 'browser_post') {
     $w('#successDetails').text = 'You will be redirected back to your procurement system...';
   } else {
-    $w('#successDetails').text = 'Items have been sent to your procurement system. You may close this window.';
+    $w('#successDetails').text =
+      'Items have been sent to your procurement system. You may close this window.';
   }
 }
 
@@ -385,7 +374,7 @@ function showReturnSuccess(response, buyer) {
 function showError(message) {
   $w('#errorMessage').show();
   $w('#errorText').text = message;
-  
+
   // Hide error after 5 seconds
   setTimeout(() => {
     $w('#errorMessage').hide();

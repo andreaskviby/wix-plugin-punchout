@@ -12,15 +12,15 @@ import crypto from 'crypto';
 export async function post_setup(request) {
   try {
     console.log('cXML Setup Request received');
-    
+
     // Parse XML body
     const xmlBody = await request.text();
-    const parser = new xml2js.Parser({ 
+    const parser = new xml2js.Parser({
       explicitArray: false,
       ignoreAttrs: false,
-      mergeAttrs: true
+      mergeAttrs: true,
     });
-    
+
     let parsedXml;
     try {
       parsedXml = await parser.parseStringPromise(xmlBody);
@@ -28,7 +28,7 @@ export async function post_setup(request) {
       console.error('XML parsing error:', xmlError);
       return badRequest({
         body: createErrorResponse('XML_PARSE_ERROR', 'Invalid XML format'),
-        headers: { 'Content-Type': 'text/xml' }
+        headers: { 'Content-Type': 'text/xml' },
       });
     }
 
@@ -40,7 +40,7 @@ export async function post_setup(request) {
     if (!cxml || !cxml.Request || !cxml.Request.PunchOutSetupRequest) {
       return badRequest({
         body: createErrorResponse('INVALID_REQUEST', 'Missing PunchOutSetupRequest'),
-        headers: { 'Content-Type': 'text/xml' }
+        headers: { 'Content-Type': 'text/xml' },
       });
     }
 
@@ -52,13 +52,13 @@ export async function post_setup(request) {
     if (!buyer) {
       return forbidden({
         body: createErrorResponse('AUTH_FAILED', 'Authentication failed'),
-        headers: { 'Content-Type': 'text/xml' }
+        headers: { 'Content-Type': 'text/xml' },
       });
     }
 
     // Create session
     const session = await createPunchoutSession(buyer, setupRequest);
-    
+
     // Build StartPage URL
     const baseUrl = request.url.split('/')[0] + '//' + request.headers.host;
     const startPageUrl = `${baseUrl}/punchout/start?sid=${session.sid}`;
@@ -71,21 +71,20 @@ export async function post_setup(request) {
 
     return ok({
       body: responseXml,
-      headers: { 
+      headers: {
         'Content-Type': 'text/xml',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      }
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
     });
-
   } catch (error) {
     console.error('Setup request error:', error);
-    
+
     const errorResponse = createErrorResponse('INTERNAL_ERROR', 'Internal server error');
     await logTransaction('out', 'cxml', null, '/punchout/cxml/setup', 500, errorResponse);
-    
+
     return serverError({
       body: errorResponse,
-      headers: { 'Content-Type': 'text/xml' }
+      headers: { 'Content-Type': 'text/xml' },
     });
   }
 }
@@ -106,16 +105,19 @@ async function authenticateBuyer(header, setupRequest) {
     }
 
     // Query buyer from database
-    const buyerQuery = await wixData.query('PunchoutBuyers')
+    const buyerQuery = await wixData
+      .query('PunchoutBuyers')
       .eq('type', 'cXML')
       .eq('active', true)
       .find();
 
     const buyer = buyerQuery.items.find(b => {
       const identities = b.identities || {};
-      return identities.from === fromIdentity && 
-             identities.to === toIdentity && 
-             identities.sender === senderIdentity;
+      return (
+        identities.from === fromIdentity &&
+        identities.to === toIdentity &&
+        identities.sender === senderIdentity
+      );
     });
 
     if (!buyer) {
@@ -132,11 +134,10 @@ async function authenticateBuyer(header, setupRequest) {
 
     // Update last activity
     await wixData.update('PunchoutBuyers', buyer._id, {
-      lastActivity: new Date()
+      lastActivity: new Date(),
     });
 
     return buyer;
-
   } catch (error) {
     console.error('Authentication error:', error);
     return null;
@@ -149,7 +150,7 @@ async function authenticateBuyer(header, setupRequest) {
 async function createPunchoutSession(buyer, setupRequest) {
   const sessionId = generateSessionId();
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-  
+
   const sessionData = {
     sid: sessionId,
     buyerId: buyer.buyerId,
@@ -157,7 +158,7 @@ async function createPunchoutSession(buyer, setupRequest) {
     pricingTier: buyer.priceListId,
     expiresAt: expiresAt,
     createdAt: new Date(),
-    cartData: {}
+    cartData: {},
   };
 
   const result = await wixData.insert('PunchoutSessions', sessionData);
@@ -211,7 +212,15 @@ function createErrorResponse(errorCode, errorText) {
 /**
  * Log transaction for monitoring and debugging
  */
-async function logTransaction(direction, protocol, buyerId, endpoint, httpStatus, payload, headers = {}) {
+async function logTransaction(
+  direction,
+  protocol,
+  buyerId,
+  endpoint,
+  httpStatus,
+  payload,
+  headers = {}
+) {
   try {
     // Remove sensitive headers
     const sanitizedHeaders = { ...headers };
@@ -226,7 +235,7 @@ async function logTransaction(direction, protocol, buyerId, endpoint, httpStatus
       endpoint,
       httpStatus,
       payload,
-      headers: sanitizedHeaders
+      headers: sanitizedHeaders,
     });
   } catch (error) {
     console.error('Logging error:', error);

@@ -15,33 +15,29 @@ export async function post_cxml_return(request) {
     if (!sessionId) {
       return badRequest({
         body: JSON.stringify({ success: false, error: 'Missing session ID' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     // Get session
-    const sessionQuery = await wixData.query('PunchoutSessions')
-      .eq('sid', sessionId)
-      .find();
+    const sessionQuery = await wixData.query('PunchoutSessions').eq('sid', sessionId).find();
 
     if (sessionQuery.items.length === 0) {
       return badRequest({
         body: JSON.stringify({ success: false, error: 'Invalid session' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     const session = sessionQuery.items[0];
 
     // Get buyer
-    const buyerQuery = await wixData.query('PunchoutBuyers')
-      .eq('buyerId', session.buyerId)
-      .find();
+    const buyerQuery = await wixData.query('PunchoutBuyers').eq('buyerId', session.buyerId).find();
 
     if (buyerQuery.items.length === 0) {
       return badRequest({
         body: JSON.stringify({ success: false, error: 'Buyer not found' }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -49,7 +45,7 @@ export async function post_cxml_return(request) {
 
     // Build POOM XML
     const poomXml = buildPunchOutOrderMessage(buyer, session, cartData);
-    
+
     // Save cart
     await saveCart(session, cartData, 'cxml');
 
@@ -61,29 +57,35 @@ export async function post_cxml_return(request) {
       // If no return URL configured, return the POOM for browser POST
       response = { status: 200, method: 'browser_post' };
     }
-    
+
     // Log transaction
-    await logTransaction('out', 'cxml', session.buyerId, '/punchout/cxml/return', response.status, poomXml);
+    await logTransaction(
+      'out',
+      'cxml',
+      session.buyerId,
+      '/punchout/cxml/return',
+      response.status,
+      poomXml
+    );
 
     // Clean up session
     await wixData.remove('PunchoutSessions', session._id);
 
     return ok({
-      body: JSON.stringify({ 
-        success: true, 
+      body: JSON.stringify({
+        success: true,
         method: response.method || 'server_post',
         buyerResponse: response.status,
         poom: response.method === 'browser_post' ? poomXml : undefined,
-        itemCount: cartData.length 
+        itemCount: cartData.length,
       }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('cXML return error:', error);
     return serverError({
       body: JSON.stringify({ success: false, error: error.message }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
@@ -178,7 +180,7 @@ function applyFieldMapping(buyer, fieldType, value) {
  */
 function buildExtrinsics(buyer, item) {
   let extrinsics = '';
-  
+
   // Add custom fields based on buyer configuration
   if (buyer.fieldMappings && buyer.fieldMappings.extrinsics) {
     Object.keys(buyer.fieldMappings.extrinsics).forEach(key => {
@@ -193,7 +195,7 @@ function buildExtrinsics(buyer, item) {
   if (item.leadTime) {
     extrinsics += `<Extrinsic name="LeadTime">${escapeXml(item.leadTime)}</Extrinsic>\n      `;
   }
-  
+
   if (item.vendor) {
     extrinsics += `<Extrinsic name="Vendor">${escapeXml(item.vendor)}</Extrinsic>\n      `;
   }
@@ -210,24 +212,23 @@ async function sendPoomToBuyer(returnUrl, poomXml) {
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml',
-        'User-Agent': 'Wix-PunchOut-Connector/1.0'
+        'User-Agent': 'Wix-PunchOut-Connector/1.0',
       },
       body: poomXml,
-      timeout: 30000 // 30 second timeout
+      timeout: 30000, // 30 second timeout
     });
 
-    return { 
-      status: response.status, 
+    return {
+      status: response.status,
       method: 'server_post',
-      statusText: response.statusText 
+      statusText: response.statusText,
     };
-
   } catch (error) {
     console.error('Error sending POOM to buyer:', error);
-    return { 
-      status: 500, 
+    return {
+      status: 500,
       method: 'server_post',
-      error: error.message 
+      error: error.message,
     };
   }
 }
@@ -245,7 +246,7 @@ async function saveCart(session, cartData, protocol) {
       postedAt: new Date(),
       status: 'posted',
       returnUrl: session.hookUrl,
-      protocol: protocol
+      protocol: protocol,
     };
 
     await wixData.insert('PunchoutCarts', cartEntry);
@@ -274,7 +275,7 @@ function calculateTotals(cartData) {
     total: subtotal.toFixed(2),
     currency: cartData[0]?.currency || 'USD',
     itemCount: cartData.length,
-    totalQuantity: totalQuantity
+    totalQuantity: totalQuantity,
   };
 }
 
@@ -283,7 +284,8 @@ function calculateTotals(cartData) {
  */
 function escapeXml(str) {
   if (!str) return '';
-  return str.toString()
+  return str
+    .toString()
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -294,7 +296,15 @@ function escapeXml(str) {
 /**
  * Log transaction for monitoring and debugging
  */
-async function logTransaction(direction, protocol, buyerId, endpoint, httpStatus, payload, headers = {}) {
+async function logTransaction(
+  direction,
+  protocol,
+  buyerId,
+  endpoint,
+  httpStatus,
+  payload,
+  headers = {}
+) {
   try {
     // Remove sensitive headers
     const sanitizedHeaders = { ...headers };
@@ -309,7 +319,7 @@ async function logTransaction(direction, protocol, buyerId, endpoint, httpStatus
       endpoint,
       httpStatus,
       payload,
-      headers: sanitizedHeaders
+      headers: sanitizedHeaders,
     });
   } catch (error) {
     console.error('Logging error:', error);
